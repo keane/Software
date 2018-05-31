@@ -29,6 +29,7 @@ class VOEstimator(object):
 		## Publisher
 		self.pub_estimation = rospy.Publisher("~estimation", Pose2DStamped, queue_size=1)
 		self.pub_pose_viz = rospy.Publisher("~pose_visualization", PointStamped, queue_size=1)
+		self.pub_img_features = rospy.Publisher("~image_with_features", Image, queue_size=1)
 
 		self.VisualOdometryEstimator = None
 		self.frame_id = -2
@@ -53,6 +54,12 @@ class VOEstimator(object):
 
 		if self.frame_id <= 0: return
 		self.estimatePosition()
+
+		try:
+			img = self.pub_img_features.publish(self.bridge.cv2_to_imgmsg(self.VisualOdometryEstimator.getImageAndFeatures, "bgr8"))
+		except CvBridgeError as e:
+			print(e)
+			return
 
 	def cbStopEstimation(self, msg):
 		if not msg.data: return
@@ -110,7 +117,7 @@ class VOEstimator(object):
 	def updateParams(self,event):
 		self.min_features = rospy.get_param("~min_features")
 		self.intersection_speed = rospy.get_param("~intersection_speed")
-		
+
 	def setupParam(self,param_name,default_value):
 		value = rospy.get_param(param_name,default_value)
 		rospy.set_param(param_name,value) #Write to parameter server for transparancy

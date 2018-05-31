@@ -59,6 +59,13 @@ class VisualOdometry:
         self.velocity = velocity
         self.time_now=0
 
+    def getImageAndFeatures(self):
+        temp_img = cv2.cvtColor(self.last_frame,cv2.COLOR_GRAY2RGB)
+        for draw_point in self.px_cur:
+        		#print draw_point
+        		cv2.circle(temp_img, (draw_point[0], draw_point[1]),3, (0,0,255), -1)
+        return temp_img
+
     def getAbsoluteScale(self):
         #TODO calculate driven distance between frames and return it here
         self.time_now=time.time()
