@@ -56,7 +56,7 @@ class VOEstimator(object):
 		self.estimatePosition()
 
 		try:
-			img = self.pub_img_features.publish(self.bridge.cv2_to_imgmsg(self.VisualOdometryEstimator.getImageAndFeatures, "bgr8"))
+			img = self.pub_img_features.publish(self.bridge.cv2_to_imgmsg(self.VisualOdometryEstimator.getImageAndFeatures(), "bgr8"))
 		except CvBridgeError as e:
 			print(e)
 			return
