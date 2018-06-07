@@ -7,6 +7,7 @@ from bs4.element import Tag
 import duckietown_utils as dtu
 from easy_logs.app_with_logs import D8AppWithLogs
 from easy_logs.resource_desc import DTR
+from mcdp_utils_xml import br
 
 from .easy_logs_summary_imp import format_logs
 
@@ -419,7 +420,7 @@ def append_urls(id_log, log, where, url_to_resource):
             a.append('link %s' % i)
             where.append(a)
             n += 1
-        where.append(Tag(name='br'))
+        where.append(br())
     return n
 
 

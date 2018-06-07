@@ -6,8 +6,7 @@ MAINTAINER Andrea Censi
 
 RUN apt-get update
 
-RUN apt-get install -y \
-    ros-kinetic-perception=1.3.1-0*
+RUN apt-get install -y ros-kinetic-perception
 
 RUN apt-get install -y \
     ros-kinetic-desktop-full \
@@ -30,7 +29,8 @@ RUN apt-get update
 RUN apt-get install -y \
     software-properties-common \
     gnupg \
-    curl
+    curl \
+    apt-transport-https
 
 # Git LFS
 
@@ -117,8 +117,8 @@ RUN pip install -U \
     chardet
 
 
-
-RUN wget https://www.princexml.com/download/prince_11.3-1_ubuntu16.04_amd64.deb && dpkg -i prince_11.3-1_ubuntu16.04_amd64.deb
+RUN wget https://www.princexml.com/download/prince_11.3-1_ubuntu16.04_amd64.deb && \
+    dpkg -i prince_11.3-1_ubuntu16.04_amd64.deb
 
 
 # RUN rm -rf /var/lib/apt/lists/*
@@ -128,9 +128,6 @@ RUN  add-apt-repository ppa:mc3man/xerus-media
 RUN apt-get update
 RUN apt-get install -y  mplayer mencoder ffmpeg
 # gstreamer0.10-ffmpeg
-
-
-# Other stuff for Duckiebot / duckietop
 
 
 RUN apt-get install -y clang
