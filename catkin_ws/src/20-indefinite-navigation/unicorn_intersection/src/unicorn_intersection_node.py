@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
 import numpy as np
-from duckietown_msgs.msg import TurnIDandType, FSMState, BoolStamped, LanePose, Pose2DStamped
+from duckietown_msgs.msg import TurnIDandType, FSMState, BoolStamped, LanePose, Pose2DStamped, Twist2DStamped
 from std_msgs.msg import Float32, Int16, Bool, String
 from geometry_msgs.msg import Point, PoseStamped, Pose
 from nav_msgs.msg import Path
@@ -17,9 +17,13 @@ class UnicornIntersectionNode(object):
 
         self.state = "JOYSTICK_CONTROL"
 
+
         self.active = False
         self.pos = np.array([0.0,0.0,0.0])
         self.turn_type = -1
+        self.oldTime = None
+        self.v = 0
+        self.omega = 0
         self.traj2 =np.array([[0.000,0.031,0.062,0.092,0.122,0.151,0.178,0.205,0.230,0.254,0.276,0.296,0.314,0.330,0.343,0.355,0.364,0.370,0.374,0.375,0.376,0.380,0.386,0.395,0.407,0.420,0.436,0.454,0.474,0.496,0.520,0.545,0.572,0.599,0.628,0.658,0.688,0.719,0.750],[0.000,0.001,0.005,0.011,0.020,0.032,0.045,0.061,0.079,0.099,0.121,0.145,0.170,0.197,0.224,0.253,0.283,0.313,0.344,0.375,0.406,0.437,0.467,0.497,0.526,0.553,0.580,0.605,0.629,0.651,0.671,0.689,0.705,0.718,0.730,0.739,0.745,0.749,0.750]])
 
         self.traj_left = np.array([[0.000,0.031,0.062,0.092,0.122,0.151,0.178,0.205,0.230,0.254,0.276,0.296,0.314,0.330,0.343,0.355,0.364,0.370,0.374,0.375], [0.000,0.001,0.005,0.011,0.020,0.032,0.045,0.061,0.079,0.099,0.121,0.145,0.170,0.197,0.224,0.253,0.283,0.313,0.344,0.375]])
@@ -32,6 +36,7 @@ class UnicornIntersectionNode(object):
         self.set_state = rospy.Subscriber("~fsm_state", FSMState, self.cbFSMState)
         self.sub_debug = rospy.Subscriber("~debugging_start", Bool, self.cbDebugging)
         self.sub_estimate = rospy.Subscriber("~estimation", Pose2DStamped, self.cbEstimation)
+        self.sub_for_kin = rospy.Subscriber("~for_kin_node_velocities", Twist2DStamped, self.cbVelocities, queue_size=1)
 
         ## Publisher
         self.pub_int_done = rospy.Publisher("~intersection_done", BoolStamped, queue_size=1)
@@ -50,6 +55,10 @@ class UnicornIntersectionNode(object):
     def cbEstimation(self, msg):
         x,y,theta = msg.x, msg.y, msg.theta
         self.pos = np.array([x,y,theta])
+
+    def cbVelocities(self, msg):
+    	self.v = msg.v
+        self.omega = msg.omega
 
 
     def cbDebugging(self, msg):
@@ -105,6 +114,22 @@ class UnicornIntersectionNode(object):
         self.pub_pose.publish(pose_msg)
     def navigationLoop(self):
         while self.active:
+
+            currentTime = time.time()
+            dt = 0
+            if self.oldTime is not None:
+                dt = currentTime -self.oldTime
+            self.oldTime = currentTime
+            theta_ff = self.pos[2] + self.omega
+            y_ff = self.v*dt*np.cos(theta_ff) + self.pos[1]
+            x_ff = self.v*dt*np.sin(theta_ff) + self.pos[0]
+
+            self.pos[0] = 0.5* self.pos[0] + 0.5* x_ff
+            self.pos[1] = 0.5* self.pos[1] + 0.5* y_ff
+            self.pos[2] = 0.5* self.pos[2] + 0.5* theta_ff
+
+
+
             idx_nearest = self.getNearestIdx(self.pos, self.traj)
             if idx_nearest >= self.traj.shape[1]-6:
                 rospy.loginfo("DOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOONE")
@@ -129,10 +154,10 @@ class UnicornIntersectionNode(object):
             pose_msg = LanePose()
             pose_msg.d = d_err
             pose_msg.phi = -theta_err
-            pose_msg.v_ref = 0.1
 
             self.pub_pose.publish(pose_msg)
             rospy.sleep(0.05)
+
 
 
     def getDistanceToDestination(self, pos, traj):

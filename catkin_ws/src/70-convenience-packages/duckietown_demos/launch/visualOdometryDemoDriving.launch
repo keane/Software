@@ -83,6 +83,7 @@
     <remap from="unicorn_intersection_node/lane_pose" to="lane_controller_node/intersection_navigation_pose" />
     <remap from="unicorn_intersection_node/start_estimation" to="visual_odometry_node/start_estimation" />
     <remap from="unicorn_intersection_node/stop_estimation" to="visual_odometry_node/stop_estimation" />
+    <remap from="unicorn_intersection_node/for_kin_node_velocities" to="forward_kinematics_node/velocity" />
 
     <include file="$(find unicorn_intersection)/launch/unicorn_intersection_node.launch">
 			<arg name="veh" value="$(arg veh)"/>
