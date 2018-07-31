@@ -49,26 +49,26 @@ class GroundProjectionTest:
     corner_ul = corners[(self.board_h)*(self.board_w)-1][0] # upper-left point
     h_flipped = False
     v_flipped = False
-    
+
     if corner_ul[0] > corner_ur[0]:
       h_flipped = True
-    
+
     if corner_lr[1] < corner_ur[1]:
       v_flipped = True
 
     # prepare lists of image and ground point coordinates
     pts_img = []
     pts_gnd = []
-    
+
     for r in range(self.board_h):
       for c in range(self.board_w):
         gnd_pt = np.array([
-          float(r)*self.square_size + self.x_offset, 
+          float(r)*self.square_size + self.x_offset,
           float(c)*self.square_size + self.y_offset
           ], dtype=np.float32)
         pts_gnd.append(gnd_pt)
         img_pt = corners[
-          (self.board_h - 1 -r if v_flipped else r)*(self.board_w) + 
+          (self.board_h - 1 -r if v_flipped else r)*(self.board_w) +
           (self.board_w - 1 -c if h_flipped else c)
         ]
         pts_img.append(img_pt[0])
@@ -135,7 +135,7 @@ if __name__ == "__main__":
 
   rospy.init_node("test_projection")
 
-  veh = rospy.get_param("~veh", "porsche911")
+  veh = rospy.get_param("~veh", "megabot12")
   print('Using vehicle name %r.' % veh)
   veh = "/" + veh
   gpt = GroundProjectionTest(veh)
