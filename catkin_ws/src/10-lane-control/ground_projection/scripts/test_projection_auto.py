@@ -26,7 +26,7 @@ class GroundProjectionTest:
     self.th_mean_sq_dist = 0.03**2 # 3cm error bound
 
   def get_image_topic_name(self, veh):
-    image_topic_name = veh + "/camera_node/image_rect"
+    image_topic_name = veh + "/camera_node/image/rect"
     try:
       rospy.wait_for_message(image_topic_name, Image, timeout=3)
       return image_topic_name
@@ -94,8 +94,12 @@ class GroundProjectionTest:
 
     # decide if it passes or fails
     if mean_sq_dist < self.th_mean_sq_dist:
+
+      f.write(str(mean_sq_dist))
       return True
+
     else:
+      f.write(str(mean_sq_dist))
       return False
 
   def get_gnd_coord(self, x, y):
@@ -139,12 +143,16 @@ if __name__ == "__main__":
   print('Using vehicle name %r.' % veh)
   veh = "/" + veh
   gpt = GroundProjectionTest(veh)
-
-  try:
-    pass_fail = gpt.run()
-    if pass_fail:
-      print "result: " + '\033[92m' + "passed" + '\033[0m'
-    else:
-      print "result: " + '\033[91m' + "failed" + '\033[0m'
-  except KeyboardInterrupt:
-    print "test shutting down"
+  f = open ("test_gp_megabot12_BAD_CALIBRATION","w")
+  for i in range (0,100):
+      try:
+        pass_fail = gpt.run()
+        if pass_fail:
+          print "result: " + '\033[92m' + "passed" + '\033[0m'
+          f.write(",1\n")
+        else:
+          print "result: " + '\033[91m' + "failed" + '\033[0m'
+          f.write(",0\n")
+      except KeyboardInterrupt:
+        print "test shutting down"
+  f.close()
